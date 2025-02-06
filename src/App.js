@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { saveAs } from 'file-saver';
 import "./App.css";
+import c2tredsLogo from "./c2treds.png";
 
 const InvoiceGenerator = () => {
   const [formData, setFormData] = useState({
@@ -233,6 +234,8 @@ const InvoiceGenerator = () => {
   };
 
   return (
+    <>
+    <header class="navbar"><img src={c2tredsLogo} alt="c2treds"/></header>
     <div className="invoice-generator">
       <h1>Invoice Generator</h1>
       {error && <div className="error">{error}</div>}
@@ -320,6 +323,7 @@ const InvoiceGenerator = () => {
 
       <button onClick={generateCSV}>Generate Invoices</button>
     </div>
+    </>
   );
 };
 

@@ -1,8 +1,9 @@
+.navbar { 
+  display: flex; align-items: center; padding: 10px 20px; background-color: #f8f8f8; } .navbar img { width: 100px; height: auto; }
 .invoice-generator {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  justify-content: center;
 }
 
 .form-group {
