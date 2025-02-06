@@ -37,7 +37,7 @@ const InvoiceGenerator = () => {
       grnDate.setDate(currentDate.getDate() - Math.floor(Math.random() * 30));
     } else {
       // Future date (within 180 days)
-      grnDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
+      grnDate.setDate(currentDate.getDate() + Math.floor(Math.random() *135) + 1);
     }
     
     // Other dates (within past 180 days)
