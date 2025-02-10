@@ -24,28 +24,30 @@ const InvoiceGenerator = () => {
     return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   };
 
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const generateDates = () => {
     const currentDate = new Date();
     let paymentDueDate, grnDate, postingDate, transactionDate;
 
     if (formData.invoiceType === 'ERP') {
-      // Payment Due Date: future within 180 days
       paymentDueDate = new Date(currentDate);
       paymentDueDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
 
-      // GRN Date logic for ERP
       grnDate = new Date(currentDate);
       if (Math.random() < 0.5) {
-        // Past date (1-44 days ago)
         const pastDays = 1 + Math.floor(Math.random() * 44);
         grnDate.setDate(currentDate.getDate() - pastDays);
       } else {
-        // Future date (1-135 days ahead)
         const futureDays = 1 + Math.floor(Math.random() * 180);
         grnDate.setDate(currentDate.getDate() + futureDays);
       }
 
-      // Other dates (postingDate, transactionDate) must be past, <=180 days
       const generateERPPastDate = () => {
         const date = new Date(currentDate);
         const daysAgo = 1 + Math.floor(Math.random() * 180);
@@ -55,9 +57,30 @@ const InvoiceGenerator = () => {
 
       postingDate = generateERPPastDate();
       transactionDate = generateERPPastDate();
+    } else if (formData.invoiceType === 'Buyer Self Upload') {
+      paymentDueDate = new Date(currentDate);
+      paymentDueDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
 
+      grnDate = new Date(currentDate);
+      if (Math.random() < 0.5) {
+        const pastDays = 1 + Math.floor(Math.random() * 44);
+        grnDate.setDate(grnDate.getDate() - pastDays);
+      } else {
+        const futureDays = 1 + Math.floor(Math.random() * 180);
+        grnDate.setDate(grnDate.getDate() + futureDays);
+      }
+
+      const invoiceDaysAgo = 1 + Math.floor(Math.random() * 180);
+      postingDate = new Date(currentDate);
+      postingDate.setDate(postingDate.getDate() - invoiceDaysAgo);
+
+      const acceptanceDays = 1 + Math.floor(Math.random() * 14);
+      transactionDate = new Date(postingDate);
+      transactionDate.setDate(postingDate.getDate() + acceptanceDays);
+      if (transactionDate > currentDate) {
+        transactionDate = new Date(currentDate);
+      }
     } else {
-      // Existing C2FO logic
       paymentDueDate = new Date(currentDate);
       paymentDueDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
       
@@ -157,6 +180,83 @@ const InvoiceGenerator = () => {
 
         csvData.push(row);
       }
+    } else if (formData.invoiceType === 'Buyer Self Upload') {
+      headers = [
+        'company_name', 'company_id', 'company_pan', 'buyer_pan', 'company_gstin', 'buyer_gstin',
+        'invoice_id', 'invoice_date', 'invoice_acceptance_date', 'grn_date', 'due_date',
+        'inv_amount', 'tax_amount', 'tds_amount', 'inv_amount_gross_tax', 'inv_amount_nettax',
+        'po_id', 'transaction_type', 'po_date', 'inv_reference', 'grn_number', 'description',
+        'credit_days', 'currency', 'product_type'
+      ];
+
+      for (let i = 1; i <= formData.numInvoices; i++) {
+        const currentDate = new Date();
+        const dates = generateDates();
+        
+        const invoiceDate = new Date(currentDate);
+        const invoiceDaysAgo = 1 + Math.floor(Math.random() * 180);
+        invoiceDate.setDate(invoiceDate.getDate() - invoiceDaysAgo);
+
+        const invoiceAcceptanceDate = new Date(invoiceDate);
+        const acceptanceDays = 1 + Math.floor(Math.random() * 14);
+        invoiceAcceptanceDate.setDate(invoiceDate.getDate() + acceptanceDays);
+        if (invoiceAcceptanceDate > currentDate) {
+          invoiceAcceptanceDate.setTime(currentDate.getTime());
+        }
+
+        const minAcceptanceDate = new Date(currentDate);
+        minAcceptanceDate.setDate(currentDate.getDate() - 180);
+        if (invoiceAcceptanceDate < minAcceptanceDate) {
+          invoiceAcceptanceDate.setTime(minAcceptanceDate.getTime());
+        }
+
+        const companyIdNumber = 30 + i - 1;
+        const company_id = `TAJAYFU${companyIdNumber}`;
+        const invoice_id = generateUniqueId('INVID');
+
+        const month = invoiceDate.toLocaleString('default', { month: 'short' }).toUpperCase();
+        const year = invoiceDate.getFullYear().toString().slice(-2);
+        const description = `BILL FOR THE M/O ${month}-${year} (${invoice_id})`;
+
+        const invRefParts = [
+          'R001',
+          `511002${Math.floor(1000 + Math.random() * 9000)}`,
+          '001',
+          new Date().getFullYear(),
+          `GST${1300 + i}/2024-25`
+        ];
+        const inv_reference = invRefParts.join('|');
+
+        const row = {
+          company_name: i % 2 === 0 ? 'SHAKTI TRADING CO.' : 'DURGESH BLOCK AND CHINA GLASS WORKS LTD.',
+          company_id: company_id,
+          company_pan: formData.sellerPan,
+          buyer_pan: formData.buyerPan,
+          company_gstin: formData.sellerGstin,
+          buyer_gstin: formData.buyerGstin,
+          invoice_id: generateUniqueId('INVID'),
+          invoice_date: formatDate(invoiceDate),
+          invoice_acceptance_date: formatDate(invoiceAcceptanceDate),
+          grn_date: formatDate(dates.grnDate),
+          due_date: formatDate(dates.paymentDueDate),
+          inv_amount: (i * 1000).toFixed(2),
+          tax_amount: '',
+          tds_amount: '',
+          inv_amount_gross_tax: '',
+          inv_amount_nettax: '',
+          po_id: '',
+          transaction_type: 1,
+          po_date: '',
+          inv_reference: inv_reference,
+          grn_number: '',
+          description: description,
+          credit_days: 45,
+          currency: 'INR',
+          product_type: formData.productType
+        };
+
+        csvData.push(row);
+      }
     } else {
       headers = [
         'company_id', 'company_name', 'division_id', 'sap_reference_number', 'company_pan',
@@ -250,8 +350,22 @@ const InvoiceGenerator = () => {
           <option value="">Select</option>
           <option value="C2FO">C2FO</option>
           <option value="ERP">ERP</option>
-          {/* <option value="Buyer Self Upload">Buyer Self Upload</option>
-          <option value="Seller Self Upload">Seller Self Upload</option> */}
+          <option value="Buyer Self Upload">Buyer Self Upload</option>
+          {/* <option value="Seller Self Upload">Seller Self Upload</option> */}
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label>Product Type:</label>
+        <select
+          name="productType"
+          value={formData.productType}
+          onChange={handleInputChange}
+        >
+          <option value="">Select</option>
+          <option value="RFDDueDate">RFDDueDate</option>
+          <option value="BIFactoring">BIFactoring</option>
+          <option value="Normal">Normal</option>
         </select>
       </div>
 
@@ -293,20 +407,6 @@ const InvoiceGenerator = () => {
           value={formData.buyerGstin}
           onChange={handleInputChange}
         />
-      </div>
-
-      <div className="form-group">
-        <label>Product Type:</label>
-        <select
-          name="productType"
-          value={formData.productType}
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="RFDDueDate">RFDDueDate</option>
-          <option value="BIFactoring">BIFactoring</option>
-          <option value="Normal">Normal</option>
-        </select>
       </div>
 
       <div className="form-group">
