@@ -252,7 +252,7 @@ const InvoiceGenerator = () => {
           description: description,
           credit_days: 45,
           currency: 'INR',
-          product_type: formData.productType
+          product_type: formData.productType === 'Normal' ? '' : formData.productType,
         };
 
         csvData.push(row);
