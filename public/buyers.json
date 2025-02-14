@@ -1,0 +1,219 @@
+[
+  {
+    "buyer_name": "Aditya Birla Fashion and Retail",
+    "buyer_pan": "AAECP2371C",
+    "buyer_gstin": "29AAECP2371C1Z6",
+    "supplier_pan": "AADCM5353J, AAECB4477F, AAFCE1606A, AANCM3432G, ABKFS6069A, BIEPK0657E",
+    "supplier_gstin": "05AANCM3432G1ZL, 06BIEPK0657E1ZK, 07AAECB4477F1ZO, 18ABKFS6069A1Z0, 29AADCM5353J1Z6, 29AAFCE1606A1Z7"
+  },
+  {
+    "buyer_name": "Ajay Buyer India",
+    "buyer_pan": "BRAPG3200P",
+    "buyer_gstin": "27AABCJ9951B1ZW",
+    "supplier_pan": "BRAPG4200L",
+    "supplier_gstin": "27AABCJ6651B1ZW"
+  },
+  {
+    "buyer_name": "Ajay Industries Buyer",
+    "buyer_pan": "BRACG4200J",
+    "buyer_gstin": "12ABCDE1234B5Z6",
+    "supplier_pan": "3a8a424870, ba1437590c, BRACG2000A, BRACG4200L, cdf272051c",
+    "supplier_gstin": "07ABCDE1234F1ZE, 07AOXPL1083P1Z2, 27AABCP0132C1Z5, 29ABCDE1234A5Z6, 29ABCDE1234F5Z4, 29ABCDE1234V5Z6, 29ABCDE1234V5Z7, 29ABCDE1234V5Z8"
+  },
+  {
+    "buyer_name": "Ajay LLP Buyer",
+    "buyer_pan": "BRACG3000L",
+    "buyer_gstin": "12ABCDE1234F5Z0",
+    "supplier_pan": "BRACG2000A",
+    "supplier_gstin": "29ABCDE1234F5Z4"
+  },
+  {
+    "buyer_name": "Ajay Manufacturing Buyer",
+    "buyer_pan": "BRAPG1200A",
+    "buyer_gstin": "12ABCDE1234V5Z6, 12ABCDE8888V5Z6, 12ABCDE9999V5Z6",
+    "supplier_pan": "ba1437590c, BRACG4200L, cdf272051c",
+    "supplier_gstin": "07AOXPL1083P1Z2, 27AABCP0132C1Z5, 29ABCDE1234A5Z6, 29ABCDE1234V5Z6, 29ABCDE1234V5Z7, 29ABCDE1234V5Z8"
+  },
+  {
+    "buyer_name": "Ajay's Buyer",
+    "buyer_pan": "BRAPG4200L",
+    "buyer_gstin": "27AABCJ1151B1ZW",
+    "supplier_pan": "AADCA1647D",
+    "supplier_gstin": "27AABCJ2251B1ZW"
+  },
+  {
+    "buyer_name": "Ajay Testing Buyer",
+    "buyer_pan": "AABCJ6731C",
+    "buyer_gstin": "29ABCDA0014B2Z2",
+    "supplier_pan": "AADCA1647D, BRAPG4298A, BRAPG5436I",
+    "supplier_gstin": "24ABHPM0999A1ZS, 27AAAPV6524E1ZP, 27AABCJ2251B1ZW, 29ABCDA0014B2B2, 29ABCDA0014B2Z1, 30AAACG4447J1ZV"
+  },
+  {
+    "buyer_name": "Automation Buyer One",
+    "buyer_pan": "BRAPG4299V",
+    "buyer_gstin": "29ABCDA0014Q2B2, 29ABCDA0014Q2B9",
+    "supplier_pan": "AACCE5838P, BIEPK0657E, BRAPG8888A",
+    "supplier_gstin": "06BIEPK0657E1ZK, 29ABCDA0014B1A1, 29ABCDA0014B2M1"
+  },
+  {
+    "buyer_name": "Automation Buyer Two",
+    "buyer_pan": "BRAGB3212O",
+    "buyer_gstin": "29ABCDA0014B1B1",
+    "supplier_pan": "BARDF5341A",
+    "supplier_gstin": "29ABCDA0014B1S1"
+  },
+  {
+    "buyer_name": "Beta Buyer",
+    "buyer_pan": "BRAPG4200O",
+    "buyer_gstin": "29ABCDZ0004A5Z6",
+    "supplier_pan": "BRAPG4235P",
+    "supplier_gstin": "29ABCSB1114A5Z6"
+  },
+  {
+    "buyer_name": "Birla Opus",
+    "buyer_pan": "AAACG4464B",
+    "buyer_gstin": "03AAACG4464B7Z2",
+    "supplier_pan": "AABCM6306M, AAFCK4976P, AAICS6396N, AAJCC7478A, AAKCS7146J",
+    "supplier_gstin": "24AABCM6306M1ZH, 24AAFCK4976P1ZT, 27AAICS6396N1ZE, 27AAJCC7478A1ZJ, 27AAKCS7146J1ZU"
+  },
+  {
+    "buyer_name": "Buyer Enterprises",
+    "buyer_pan": "d9a2266918",
+    "buyer_gstin": "22RAHUL0000A1Z4",
+    "supplier_pan": "AADCA1647D, BFTPM4445D",
+    "supplier_gstin": "22RAHUL0000A1Z5, 23AVJPK5429K1ZD, 30AADCA1647D1ZF"
+  },
+  {
+    "buyer_name": "Buyer Release Testing 1.0",
+    "buyer_pan": "BRAPG4200P",
+    "buyer_gstin": "29ABCDE8884A5Z6",
+    "supplier_pan": "BRAPG4200L",
+    "supplier_gstin": "29ABCDE9994A5Z6"
+  },
+  {
+    "buyer_name": "Cipla Ltd.",
+    "buyer_pan": "AAACC1450B",
+    "buyer_gstin": "09AAACC1450B1ZC",
+    "supplier_pan": "AAAFA3078JI, ABCDE1234F",
+    "supplier_gstin": "06AABCU1234R1Z2, 27AAAFT1279J1ZZ"
+  },
+  {
+    "buyer_name": "Corporate Pvt. Ltd.",
+    "buyer_pan": "BRAPG4200A",
+    "buyer_gstin": "29ABCDE1114A5Z6",
+    "supplier_pan": "BRAPG4200B",
+    "supplier_gstin": "29ABCDE2224A5Z6"
+  },
+  {
+    "buyer_name": "Dabur India",
+    "buyer_pan": "AAACD0474C",
+    "buyer_gstin": "06AAACD0474C1Z9, 19AAACD0474C1Z2, 23AAACD0474C1ZD, 26AAACD0474C2Z6",
+    "supplier_pan": "AAACB0979N, AABCP6975H, ACXFS1675E",
+    "supplier_gstin": "09AAACB0979N1Z8, 19AABCP6975H1ZX, 26ACXFS1675E2ZL"
+  },
+  {
+    "buyer_name": "Demo india Buyer",
+    "buyer_pan": "BRAPG1122A",
+    "buyer_gstin": "29ABCDA0004B5Z2",
+    "supplier_pan": "AADCA1647D, ASZPS3180P, BRAPG1000Z, BRAPG4200K, BRAPG4200L, BRAPG4200Q, BRAPG4211A, BRAPG4235P, BRAPG4288U, BRAPG4299A, BRAPG4522P, PANSP1234S",
+    "supplier_gstin": "09AAACH7557G1ZX, 22PARAS0000A1Z5, 22RAHUL0000A1Z5, 27AABCJ2251B1ZW, 27ASZPS3180Q1ZF, 29ABCDA0004A5Z2, 29ABCDA0004A5Z6, 29ABCDA1904A5Z6, 29ABCDB0004A5A1, 29ABCDB0004A5Z6, 29ABCDB1267A5Z6, 29ABCDE9994A5Z6, 29ABCDZ0004A5B2, 29ABCSB1114A5Z6, 30AADCA1647D1ZF"
+  },
+  {
+    "buyer_name": "Gama Buyers",
+    "buyer_pan": "BRAPG1234O",
+    "buyer_gstin": "29ABCDB1114A5A6, 29ABCDB1114A5B6, 29ABCDB1114A5C6, 29ABCDB1114A5D6, 29ABCDB1114A5E6, 29ABCDB1114A5F6, 29ABCDB1114A5H6, 29ABCDB1114A5K6, 29ABCDB1114A5L6, 29ABCDB1114A5N6, 29ABCDB1114A5O6, 29ABCDB1114A5P6, 29ABCDB1114A5Q6, 29ABCDB1114A5R6, 29ABCDB1114A5S6, 29ABCDB1114A5T6, 29ABCDB1114A5U6, 29ABCDB1114A5V6, 29ABCDB1114A5X6, 29ABCDB1114A5Y6, 29ABCDB1114A5Z6, 29ABCDB9234A5R6",
+    "supplier_pan": "BRAPG4200K, BRAPG4200Q, BRAPG4522P",
+    "supplier_gstin": "29ABCDA0004A5Z6, 29ABCDA1904A5Z6, 29ABCDB0004A5Z6"
+  },
+  {
+    "buyer_name": "Groww Buyer",
+    "buyer_pan": "BRAPG4200Q",
+    "buyer_gstin": "29ABCDA1114A5Z6",
+    "supplier_pan": "BRAPG4200K, BRAPG4200Q",
+    "supplier_gstin": "29ABCDA0004A5Z6, 29ABCDA1904A5Z6"
+  },
+  {
+    "buyer_name": "HPCL",
+    "buyer_pan": "BRAPG9812B",
+    "buyer_gstin": "29ABCDA0004B2B2",
+    "supplier_pan": "AAACU2408H, AAAFI2366M, AABPP5336R, AADCA1647D, AAFCK9227P, ASZPS3180P, BFTPM4445D, BRADF7655L, BRAPG1000Z, BRAPG4200B, BRAPG4200K, BRAPG4200L, BRAPG4235P, BRAPG4288U, BRAPG4298A, BRAPG4299A, BRAPG4522P, BRAPG5436I, BRAPG9812A, PANSP1234S",
+    "supplier_gstin": "02AACCN5184H1ZM, 05AAAFI2366M2ZB, 06AAFCK9227P1ZX, 09AAACH7557G1ZX, 09AAACT5821F1ZG, 22PARAS0000A1Z5, 22RAHUL0000A1Z5, 23AVJPK5429K1ZD, 24AAACU2408H1ZQ, 24ABHPM0999A1ZS, 27AAAPV6524E1ZP, 27AABCJ6651B1ZW, 27AABPP5336R1Z3, 27ASZPS3180Q1ZF, 28ABCAA0004A5Z2, 28ABCDA0004A5Z2, 29ABCDA0004A5A1, 29ABCDA0004A5Z2, 29ABCDA0004B1A2, 29ABCDA0014B2B2, 29ABCDA0014B2Z1, 29ABCDA1234A5Z6, 29ABCDA1904A5Z6, 29ABCDB0004A5Z6, 29ABCDB1267A5Z6, 29ABCDB4444A5Z6, 29ABCDE1234P5Z0, 29ABCDE2224A5Z6, 29ABCDE9994A5Z6, 29ABCDZ0004A5B2, 29ABCSB1114A5Z6, 30AAACG4447J1ZV, 30AADCA1647D1ZF"
+  },
+  {
+    "buyer_name": "jsw cement",
+    "buyer_pan": "AABCJ6731B",
+    "buyer_gstin": "08AAACD0474C1Z5, 09AAACA2513K1ZX, 09AAACD0474C1Z3, 22AAAAA0000A1Z3, 29AABCJ6731B1ZS, 29ABCDB1234A5Z6, 37AABCJ6731B1ZV",
+    "supplier_pan": "AAACU2408H, AAAFI2366M, AADCA1647D, AAFCK9227P, ASZPS3180P, BEYPS2661N, BRAPG4200Q, BRAPG4235P",
+    "supplier_gstin": "02AACCN5184H1ZM, 05AAAFI2366M2ZB, 06AAFCK9227P1ZX, 09AAACH7557G1ZX, 09AAACT5821F1ZG, 09BEYPS2661N1ZO, 22RAHUL0000A1Z5, 24AAACU2408H1ZQ, 27ASZPS3180Q1ZF, 29ABCDA0004A5Z6, 29ABCDA1234A5Z6, 29ABCDB4444A5Z6, 29ABCDE1234P5Z0, 29ABCSB1114A5Z6, 30AADCA1647D1ZF"
+  },
+  {
+    "buyer_name": "Jubilant FoodWorks",
+    "buyer_pan": "AABCD1821C",
+    "buyer_gstin": "09AABCD1821C1Z9",
+    "supplier_pan": "AMGPY8740B",
+    "supplier_gstin": "07AMGPY8740B2Z5"
+  },
+  {
+    "buyer_name": "Limited",
+    "buyer_pan": "AAACJ4323N",
+    "buyer_gstin": "19AABCJ6731B1ZT",
+    "supplier_pan": "6aac16213a, AABCP0132C, AABPP5336R, AADCA1647D, AAFCK9227P, ASZPS3180P, BFTPM4445D, BRAPG4300O, cdf272051c",
+    "supplier_gstin": "06AAFCK9227P1ZX, 07AOXPL1083P1Z2, 09AAACH7557G1ZX, 09AABDD0124C1Z4, 22RAHUL0000A1Z5, 23AVJPK5429K1ZD, 27AAAFC3014A1ZE, 27AABCP0132C1Z5, 27AABPP5336R1Z3, 27AHOPM5237C1ZA, 27ASZPS3180Q1ZF, 29ABCDE1234P5Z0, 29AMTPB2992D1ZR, 30AADCA1647D1ZF"
+  },
+  {
+    "buyer_name": "Micro Buyer",
+    "buyer_pan": "BRAPG8888B",
+    "buyer_gstin": "29ABCDA0014B2M2",
+    "supplier_pan": "BRAPG8888A",
+    "supplier_gstin": "29ABCDA0014B2M1"
+  },
+  {
+    "buyer_name": "Paras Buyer",
+    "buyer_pan": "PANBY1234B",
+    "buyer_gstin": "22PARAS0000A1Z4",
+    "supplier_pan": "ABCDE1234Z, PANSP1234S, PANSP2345S, PANSP3456S",
+    "supplier_gstin": "22GSTAA0000A1Z5, 22PARAS0000A1K7, 22PARAS0000A1Z5, 22PARAS0000S1T3"
+  },
+  {
+    "buyer_name": "Prasang Buyer",
+    "buyer_pan": "XXXDE1234T",
+    "buyer_gstin": "35AXNGD5675Z2X1",
+    "supplier_pan": "ABCDE1234Z",
+    "supplier_gstin": "22PARAS0000A1K7"
+  },
+  {
+    "buyer_name": "Sigma Industries Buyer",
+    "buyer_pan": "BRAPG4212B",
+    "buyer_gstin": "29ABCDB0004A5B2",
+    "supplier_pan": "BRAPG4211A",
+    "supplier_gstin": "29ABCDB0004A5A1"
+  },
+  {
+    "buyer_name": "Testing Buyer",
+    "buyer_pan": "BRAPG4298B",
+    "buyer_gstin": "29ABCDA0024B2B2",
+    "supplier_pan": "BRAPG4298A, BRAPG9812A, BRAQG8888A",
+    "supplier_gstin": "29ABCDA0004B1A2, 29ABCDA0014B2B2, 29ABCQA0014B1A1"
+  },
+  {
+    "buyer_name": "Tilak Nagar",
+    "buyer_pan": "AAACT6047R",
+    "buyer_gstin": "27AAACT6047R1ZP, 27AABCJ6731B1ZW",
+    "supplier_pan": "AAACF2630E",
+    "supplier_gstin": "27AAACF2630E1Z5, 27AABCV0782E1YF, 27AABCV0782E1ZF"
+  },
+  {
+    "buyer_name": "Transaction Test Buyer",
+    "buyer_pan": "BRAPG1000Y",
+    "buyer_gstin": "29ABCDZ0004A5Z2",
+    "supplier_pan": "BRAPG1000Z",
+    "supplier_gstin": "29ABCDZ0004A5B2"
+  },
+  {
+    "buyer_name": "Uniparts",
+    "buyer_pan": "AAACU0454D",
+    "buyer_gstin": "09AAACU0454D1ZO",
+    "supplier_pan": "AAACU0454D, AAUFA7759G",
+    "supplier_gstin": "03AAACU0454D2ZZ, 03AAUFA7759G1Z2"
+  }
+]
