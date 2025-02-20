@@ -94,15 +94,15 @@
     "buyer_name": "Cipla Ltd.",
     "buyer_pan": "AAACC1450B",
     "buyer_gstin": "09AAACC1450B1ZC",
-    "supplier_pan": "AAAFA3078JI, ABCDE1234F",
-    "supplier_gstin": "06AABCU1234R1Z2, 27AAAFT1279J1ZZ"
+    "supplier_pan": "AAAFA3078JI",
+    "supplier_gstin": "27AAAFT1279J1ZZ"
   },
   {
     "buyer_name": "Corporate Pvt. Ltd.",
     "buyer_pan": "BRAPG4200A",
     "buyer_gstin": "29ABCDE1114A5Z6",
-    "supplier_pan": "BRAPG4200B",
-    "supplier_gstin": "29ABCDE2224A5Z6"
+    "supplier_pan": "AAACB0979N, AABCP6975H, AANCM3432G, AMGPY8740B, BRAPG4200B",
+    "supplier_gstin": "05AANCM3432G1ZL, 07AMGPY8740B2Z5, 09AAACB0979N1Z8, 19AABCP6975H1ZX, 29ABCDE2224A5Z6"
   },
   {
     "buyer_name": "Dabur India",
