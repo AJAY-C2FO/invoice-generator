@@ -236,5 +236,12 @@
     "buyer_gstin": "09AAACU0454D1ZO",
     "supplier_pan": "AAACU0454D, AAUFA7759G",
     "supplier_gstin": "03AAACU0454D2ZZ, 03AAUFA7759G1Z2"
+  },
+  {
+    "buyer_name": "Automation Buyer Four",
+    "buyer_pan": "BRADF5432L",
+    "buyer_gstin": "29AYYDZ0014Q2B2",
+    "supplier_pan": "BRADF5432L",
+    "supplier_gstin": "29AYYDZ0014Q2B2"
   }
 ]
