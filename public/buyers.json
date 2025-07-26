@@ -243,5 +243,12 @@
     "buyer_gstin": "29AYYDZ0014Q2B2",
     "supplier_pan": "BRADF5432L",
     "supplier_gstin": "29AYYDZ0014Q2B2"
+  },
+  {
+    "buyer_name": "Tech Buyer",
+    "buyer_pan": "BRAPH5555H",
+    "buyer_gstin": "29AYYDZ0014Q3B3",
+    "supplier_pan": "BRAPH6543Q",
+    "supplier_gstin": "29AYYDZ0014Q1A1"
   }
 ]
