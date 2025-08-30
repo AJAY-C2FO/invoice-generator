@@ -250,5 +250,12 @@
     "buyer_gstin": "29AYYDZ0014Q3B3",
     "supplier_pan": "BRAPH6543Q",
     "supplier_gstin": "29AYYDZ0014Q1A1"
+  },
+    {
+    "buyer_name": "DVN Groups buyer",
+    "buyer_pan": "BRAGF3421E",
+    "buyer_gstin": "29AYYDZ0014Q9O9",
+    "supplier_pan": "DVNPG4200A",
+    "supplier_gstin": "29AYYDZ0014Q1ZL"
   }
 ]
