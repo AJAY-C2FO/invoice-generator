@@ -257,5 +257,13 @@
     "buyer_gstin": "29AYYDZ0014Q9O9",
     "supplier_pan": "DVNPG4200A",
     "supplier_gstin": "29AYYDZ0014Q1ZL"
+  },
+  {
+    "buyer_name": "IOCL",
+    "buyer_pan": "AAACA2513M",
+    "buyer_gstin": "29ABCDA0014M1T5",
+    "supplier_pan": "AKMPG8715C",
+    "supplier_gstin": "09AKMPG8715C1Z4"
   }
+
 ]
