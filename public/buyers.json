@@ -108,8 +108,8 @@
     "buyer_name": "Corporate Pvt. Ltd.",
     "buyer_pan": "BRAPG4200A",
     "buyer_gstin": "29ABCDE1114A5Z6",
-    "supplier_pan": "AAACB0979N, AABCP6975H, AANCM3432G, AMGPY8740B, BRAPG4200B",
-    "supplier_gstin": "05AANCM3432G1ZL, 07AMGPY8740B2Z5, 09AAACB0979N1Z8, 19AABCP6975H1ZX, 29ABCDE2224A5Z6"
+    "supplier_pan": "AALCR4146A, AABCP6975H, AAACB0979N, AAACB0979N, BRAPG4200B",
+    "supplier_gstin": "09AALCR4146A1ZH, 19AABCP6975H1ZX, 09AAACB0979N1Z8, 09AAACB0979N1Z8, 29ABCDE2224A5Z6"
   },
   {
     "buyer_name": "Dabur India",
@@ -265,5 +265,4 @@
     "supplier_pan": "AKMPG8715C",
     "supplier_gstin": "09AKMPG8715C1Z4"
   }
-
 ]
