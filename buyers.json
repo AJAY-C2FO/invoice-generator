@@ -271,5 +271,12 @@
     "buyer_gstin": "08AAACG2634B1Z6",
     "supplier_pan": "ACWPA1972H,AKIPK9373N,AADCE4925E,EUUPK3289M,DCXPK8016A,AABFM6228P",
     "supplier_gstin": "20ACWPA1972H1ZQ,07AKIPK9373N1ZD,08AADCE4925E1ZT,08DCXPK8016A1ZF,09AABFM6228P1ZS"
+  },
+  {
+    "buyer_name": "Tata Buyer",
+    "buyer_pan": "BRACG4321W",
+    "buyer_gstin": "01BRACG4321W1Z1",
+    "supplier_pan": "BRAPG4532E",
+    "supplier_gstin": "01BRAPG4532E1Z8"
   }
 ]
