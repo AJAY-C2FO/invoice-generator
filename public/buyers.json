@@ -278,5 +278,12 @@
     "buyer_gstin": "01BRACG4321W1Z1",
     "supplier_pan": "BRAPG4532E",
     "supplier_gstin": "01BRAPG4532E1Z8"
+  },
+  {
+    "buyer_name": "Reliance Smart",
+    "buyer_pan": "AABCR1718E",
+    "buyer_gstin": "27AABCR1718E2ZO",
+    "supplier_pan": "AUGPM0753J",
+    "supplier_gstin": "24AUGPM0753J1Z5, 33AUGPM0753J1ZB"
   }
 ]
