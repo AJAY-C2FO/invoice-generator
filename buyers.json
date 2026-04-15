@@ -285,5 +285,12 @@
     "buyer_gstin": "27AABCR1718E2ZO",
     "supplier_pan": "AUGPM0753J",
     "supplier_gstin": "24AUGPM0753J1Z5, 33AUGPM0753J1ZB"
+  },
+  {
+    "buyer_name": "Quant Buyer",
+    "buyer_pan": "BRATH6543E",
+    "buyer_gstin": "01BRATH6543E1Z1",
+    "supplier_pan": "BRADF4321W",
+    "supplier_gstin": "01BRADF4321W1Z1"
   }
 ]
