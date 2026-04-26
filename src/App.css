@@ -13,6 +13,9 @@
   --danger:      #e11d48;
   --danger-bg:   #fff1f3;
   --danger-border:#fecdd3;
+  --warn:        #d97706;
+  --warn-bg:     #fffbeb;
+  --warn-border: #fde68a;
   --text-1:      #111827;
   --text-2:      #4b5563;
   --text-3:      #9ca3af;
@@ -123,6 +126,15 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.label-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-3);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .badge {
@@ -258,7 +270,6 @@ input[type="number"]::-webkit-outer-spin-button { opacity: 0.5; }
 }
 
 .select-all-item:hover { background: var(--accent-light); }
-.buyer-divider { display: none; }
 
 .buyer-empty {
   padding: 20px;
@@ -290,6 +301,151 @@ input[type="number"]::-webkit-outer-spin-button { opacity: 0.5; }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Due Date Range Box ─────────────────────────────────────── */
+.date-range-box {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  position: relative;
+}
+
+.date-range-box:focus-within {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.date-field-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px 8px 12px;
+  gap: 2px;
+  min-width: 0;
+}
+
+.date-field-half:first-child {
+  border-right: 1px solid var(--border);
+}
+
+.date-sub-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1;
+}
+
+.date-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-icon {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.date-input-half {
+  flex: 1;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  font-family: var(--font) !important;
+  color: var(--text-1);
+  outline: none;
+  min-width: 0;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.date-input-half::-webkit-calendar-picker-indicator {
+  opacity: 0.35;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  margin: 0;
+}
+
+.date-input-half::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.date-input-half::-webkit-datetime-edit {
+  padding: 0;
+}
+
+.date-range-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.clear-range-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--text-3);
+  flex-shrink: 0;
+  align-self: stretch;
+  transition: background var(--transition), color var(--transition);
+}
+
+.clear-range-btn:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ── Date Distribution Hint ─────────────────────────────────── */
+.date-dist-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 11px;
+  background: var(--accent-light);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: #2563eb;
+  animation: fadeIn 0.2s ease;
+}
+
+.date-dist-hint svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.date-dist-hint strong {
+  font-weight: 600;
+}
+
+.date-dist-warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
+}
 
 /* ── Card Footer ────────────────────────────────────────────── */
 .card-footer {
@@ -356,7 +512,12 @@ input[type="number"]::-webkit-outer-spin-button { opacity: 0.5; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .card-header, .card-body, .card-footer { padding-left: 18px; padding-right: 18px; }
   .form-row { grid-template-columns: 1fr; }
+  .date-range-box { flex-direction: column; align-items: stretch; }
+  .date-field-half:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .date-range-arrow { display: none; }
+  .clear-range-btn { border-left: none; border-top: 1px solid var(--border); width: 100%; height: 34px; }
 }

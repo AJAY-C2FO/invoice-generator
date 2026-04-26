@@ -8,7 +8,9 @@ const InvoiceGenerator = () => {
   const [formData, setFormData] = useState({
     invoiceType: '',
     productType: '',
-    numInvoices: 1
+    numInvoices: 1,
+    dueDateStart: '',
+    dueDateEnd: ''
   });
   const [buyers, setBuyers] = useState([]);
   const [selectedBuyers, setSelectedBuyers] = useState([]);
@@ -109,7 +111,9 @@ const InvoiceGenerator = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const generateDates = () => {
+  // invoiceIndex: 0-based index of current invoice
+  // totalInvoices: total number of invoices being generated
+  const generateDates = (invoiceIndex = 0, totalInvoices = 1) => {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
@@ -118,43 +122,64 @@ const InvoiceGenerator = () => {
     postingDate.setDate(currentDate.getDate() - 90);
 
     // GRN Date: <= 45 days in past, < current_date
-    const grnDaysAgo = 1 + Math.floor(Math.random() * 45); // 1..45
+    const grnDaysAgo = 1 + Math.floor(Math.random() * 45);
     const grnDate = new Date(currentDate);
     grnDate.setDate(currentDate.getDate() - grnDaysAgo);
 
-    // Due Date: > current_date, <= 180 days future
-    const dueDaysAhead = 1 + Math.floor(Math.random() * 180); // 1..180
-    const paymentDueDate = new Date(currentDate);
-    paymentDueDate.setDate(currentDate.getDate() + dueDaysAhead);
-
-    // Ensure grn_date <= due_date (always true since grn is past, due is future)
+    // Due Date logic:
+    // If user provides both dueDateStart and dueDateEnd → distribute invoices evenly across range
+    // If only one or neither → auto-generate (random 1–180 days future)
+    let paymentDueDate;
+    if (formData.dueDateStart && formData.dueDateEnd) {
+      const start = new Date(formData.dueDateStart);
+      const end = new Date(formData.dueDateEnd);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      const spanMs = end.getTime() - start.getTime();
+      // Evenly space: invoice 0 → start, last invoice → end
+      // If only 1 invoice → use start date
+      const step = totalInvoices > 1 ? spanMs / (totalInvoices - 1) : 0;
+      paymentDueDate = new Date(start.getTime() + Math.round(step * invoiceIndex));
+    } else {
+      const dueDaysAhead = 1 + Math.floor(Math.random() * 180);
+      paymentDueDate = new Date(currentDate);
+      paymentDueDate.setDate(currentDate.getDate() + dueDaysAhead);
+    }
 
     // Transaction Date: <= 90 days in past, >= posting_date, < current_date
-    // posting_date is exactly -90 days, so transaction_date is in range [-90, -1] days
-    const txDaysAgo = 1 + Math.floor(Math.random() * 90); // 1..90
+    const txDaysAgo = 1 + Math.floor(Math.random() * 90);
     const transactionDate = new Date(currentDate);
     transactionDate.setDate(currentDate.getDate() - txDaysAgo);
-    // Clamp to be >= postingDate
     if (transactionDate < postingDate) {
       transactionDate.setTime(postingDate.getTime());
     }
 
-    // Pay Date: ERP and C2FO → current_date + 1; otherwise → due_date
+    // Pay Date: ERP and C2FO → current_date + 1; Buyer Self Upload → random future
     let payDate;
     if (formData.invoiceType === 'ERP' || formData.invoiceType === 'C2FO') {
       payDate = new Date(currentDate);
       payDate.setDate(currentDate.getDate() + 1);
     } else {
-      payDate = new Date(paymentDueDate);
+      const payDaysAhead = 1 + Math.floor(Math.random() * 180);
+      payDate = new Date(currentDate);
+      payDate.setDate(currentDate.getDate() + payDaysAhead);
     }
 
-    return {
-      postingDate,
-      grnDate,
-      transactionDate,
-      paymentDueDate,
-      payDate
-    };
+    return { postingDate, grnDate, transactionDate, paymentDueDate, payDate };
+  };
+
+  // Realistic Amount Generator: ₹1,00,000 – ₹10,00,000
+  const generateRealisticAmount = () => {
+    const lakhBase = 1 + Math.random() * 9;
+    const baseAmount = Math.floor(lakhBase * 100000);
+
+    if (Math.random() < 0.5) {
+      return Math.round(baseAmount / 1000) * 1000;
+    } else {
+      const rounded = Math.floor(baseAmount / 1000) * 1000;
+      const remainder = 100 + Math.floor(Math.random() * 900);
+      return rounded + remainder;
+    }
   };
 
   const generateCSVForBuyer = (buyer) => {
@@ -164,6 +189,7 @@ const InvoiceGenerator = () => {
     let headers = [];
     const csvData = [];
     const baseVoucherId = 510000000;
+    const totalInvoices = formData.numInvoices;
 
     combinations.forEach(combination => {
       if (formData.invoiceType === 'ERP') {
@@ -183,8 +209,9 @@ const InvoiceGenerator = () => {
           '0201|Himachal Pradesh Dabur'
         ];
 
-        for (let i = 1; i <= formData.numInvoices; i++) {
-          const dates = generateDates();
+        for (let i = 1; i <= totalInvoices; i++) {
+          // Pass 0-based index and total so due dates are distributed
+          const dates = generateDates(i - 1, totalInvoices);
 
           const row = {
             company_id: `AJAYCOM${i.toString().padStart(3, '0')}`,
@@ -194,7 +221,7 @@ const InvoiceGenerator = () => {
             buyer_tax_id: combination.buyerGstin,
             buyer_pan: combination.buyerPan,
             invoice_id: generateUniqueId('INVID'),
-            amount: 1000,
+            amount: generateRealisticAmount(),
             currency: 'INR',
             transaction_date: dates.transactionDate.toISOString().split('T')[0],
             grn_date: dates.grnDate.toISOString().split('T')[0],
@@ -234,12 +261,11 @@ const InvoiceGenerator = () => {
           'credit_days', 'currency', 'product_type'
         ];
 
-        for (let i = 1; i <= formData.numInvoices; i++) {
+        for (let i = 1; i <= totalInvoices; i++) {
           const currentDate = new Date();
           currentDate.setHours(0, 0, 0, 0);
-          const dates = generateDates();
+          const dates = generateDates(i - 1, totalInvoices);
 
-          // invoice_date = posting_date (90 days ago)
           const invoiceDate = new Date(dates.postingDate);
 
           const invoiceAcceptanceDate = new Date(invoiceDate);
@@ -284,7 +310,7 @@ const InvoiceGenerator = () => {
             invoice_acceptance_date: formatDate(invoiceAcceptanceDate),
             grn_date: formatDate(dates.grnDate),
             due_date: formatDate(dates.paymentDueDate),
-            inv_amount: (i * 1000).toFixed(2),
+            inv_amount: generateRealisticAmount().toFixed(2),
             tax_amount: '',
             tds_amount: '',
             inv_amount_gross_tax: '',
@@ -316,11 +342,11 @@ const InvoiceGenerator = () => {
           'product_type', 'description'
         ];
 
-        for (let i = 1; i <= formData.numInvoices; i++) {
-          const dates = generateDates();
-          const amount = Math.floor(Math.random() * 100000);
-          const discountPercentage = parseFloat((Math.random() * 1).toFixed(2));
-          const income = parseFloat((Math.abs(amount) * discountPercentage / 100).toFixed(2));
+        for (let i = 1; i <= totalInvoices; i++) {
+          const dates = generateDates(i - 1, totalInvoices);
+          const amount = generateRealisticAmount();
+          const discountPercentage = parseFloat((8 + Math.random() * 10).toFixed(2));
+          const income = parseFloat((amount * discountPercentage / 100).toFixed(2));
 
           const row = {
             company_id: `AJAYCOMPANY${i.toString().padStart(2, '0')}`,
@@ -343,9 +369,7 @@ const InvoiceGenerator = () => {
             currency: 'INR',
             discount_percentage: discountPercentage,
             income: income,
-            discounted_invoice_amount: amount > 0 ?
-                (amount - income).toFixed(2) :
-                (amount + income).toFixed(2),
+            discounted_invoice_amount: (amount - income).toFixed(2),
             offer_apr_amount: parseFloat((Math.random() * (15 - 10) + 10).toFixed(1)),
             transaction_type: formData.productType === 'BIFactoring' ? 2 : 1,
             fiscal_year: new Date().getFullYear(),
@@ -395,29 +419,54 @@ const InvoiceGenerator = () => {
       return;
     }
 
-    const zip = new JSZip();
-    let generatedCount = 0;
+    // Validate due date range if either field is filled
+    if (formData.dueDateStart || formData.dueDateEnd) {
+      if (!formData.dueDateStart || !formData.dueDateEnd) {
+        setError('Please select both start and end due dates, or leave both blank to auto-generate');
+        return;
+      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const start = new Date(formData.dueDateStart);
+      const end = new Date(formData.dueDateEnd);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      if (start <= today) {
+        setError('Due date start must be a future date');
+        return;
+      }
+      if (end <= start) {
+        setError('Due date end must be after start date');
+        return;
+      }
+    }
 
+    const results = [];
     selectedBuyers.forEach(buyerName => {
       const buyer = buyers.find(b => b.buyer_name === buyerName);
       if (!buyer) return;
-
       const csv = generateCSVForBuyer(buyer);
       if (!csv) return;
-
       const safeName = buyerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      zip.file(`invoices_${safeName}.csv`, csv);
-      generatedCount++;
+      results.push({ safeName, csv });
     });
 
-    if (generatedCount === 0) {
+    if (results.length === 0) {
       setError('No valid buyer combinations found. Cannot generate CSV.');
       return;
     }
 
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
     const timestamp = new Date().toISOString().slice(0, 10);
-    saveAs(zipBlob, `invoices_${timestamp}.zip`);
+
+    if (results.length === 1) {
+      const blob = new Blob([results[0].csv], { type: 'text/csv;charset=utf-8;' });
+      saveAs(blob, `invoices_${results[0].safeName}_${timestamp}.csv`);
+    } else {
+      const zip = new JSZip();
+      results.forEach(({ safeName, csv }) => zip.file(`invoices_${safeName}.csv`, csv));
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, `invoices_${timestamp}.zip`);
+    }
   };
 
   if (loading) return (
@@ -428,6 +477,19 @@ const InvoiceGenerator = () => {
   );
 
   const isReady = selectedBuyers.length > 0 && formData.invoiceType && formData.productType;
+
+  // Compute due date span info for the hint text
+  const dueDateSpanDays = formData.dueDateStart && formData.dueDateEnd
+      ? Math.round(
+          (new Date(formData.dueDateEnd) - new Date(formData.dueDateStart)) / 86400000
+      )
+      : null;
+
+  const minEndDate = formData.dueDateStart
+      ? new Date(new Date(formData.dueDateStart).getTime() + 86400000).toISOString().split('T')[0]
+      : new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
   return (
       <>
@@ -450,13 +512,13 @@ const InvoiceGenerator = () => {
               {error && (
                   <div className="error-banner">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
                     {error}
                   </div>
               )}
 
-              {/* Buyer Multi-Select */}
+              {/* ── Buyer Multi-Select ── */}
               <div className="form-group">
               <span className="form-label">
                 Buyers
@@ -467,7 +529,7 @@ const InvoiceGenerator = () => {
 
                 <div className="buyer-search-wrapper">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
                   <input
                       type="text"
@@ -506,7 +568,7 @@ const InvoiceGenerator = () => {
                 </div>
               </div>
 
-              {/* Invoice Type + Product Type — side by side */}
+              {/* ── Invoice Type + Product Type ── */}
               <div className="form-row">
                 <div className="form-group">
                   <span className="form-label">Invoice Type</span>
@@ -541,7 +603,122 @@ const InvoiceGenerator = () => {
                 </div>
               </div>
 
-              {/* Number of Invoices */}
+              {/* ── Due Date Range ── */}
+              <div className="form-group">
+              <span className="form-label">
+                Due date range
+                <span className="label-hint">(optional — leave blank to auto-generate)</span>
+                {formData.dueDateStart && formData.dueDateEnd && (
+                    <span className="badge">
+                    {new Date(formData.dueDateStart).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      {' – '}
+                      {new Date(formData.dueDateEnd).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                  </span>
+                )}
+              </span>
+
+                <div className="date-range-box">
+                  {/* Start Date */}
+                  <div className="date-field-half">
+                    <span className="date-sub-label">From</span>
+                    <div className="date-input-row">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="date-icon">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      <input
+                          type="date"
+                          name="dueDateStart"
+                          value={formData.dueDateStart}
+                          onChange={handleInputChange}
+                          min={tomorrow}
+                          className="date-input-half"
+                      />
+                    </div>
+                  </div>
+
+                  <span className="date-range-arrow">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </span>
+
+                  {/* End Date */}
+                  <div className="date-field-half">
+                    <span className="date-sub-label">To</span>
+                    <div className="date-input-row">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="date-icon">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      <input
+                          type="date"
+                          name="dueDateEnd"
+                          value={formData.dueDateEnd}
+                          onChange={handleInputChange}
+                          min={minEndDate}
+                          className="date-input-half"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Clear Button */}
+                  {(formData.dueDateStart || formData.dueDateEnd) && (
+                      <button
+                          className="clear-range-btn"
+                          onClick={() => setFormData(prev => ({ ...prev, dueDateStart: '', dueDateEnd: '' }))}
+                          title="Clear dates"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                  )}
+                </div>
+
+                {/* Distribution hint */}
+                {formData.dueDateStart && formData.dueDateEnd && dueDateSpanDays !== null && (
+                    <div className="date-dist-hint">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <span>
+                    {formData.numInvoices} invoice{formData.numInvoices > 1 ? 's' : ''} will get due dates evenly distributed across a{' '}
+                        <strong>{dueDateSpanDays}-day span</strong>
+                        {formData.numInvoices > 1 && (
+                            <> — each invoice gets a unique due date</>
+                        )}
+                  </span>
+                    </div>
+                )}
+
+                {/* Only one date filled warning */}
+                {(formData.dueDateStart && !formData.dueDateEnd) && (
+                    <div className="date-dist-hint date-dist-warn">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                      <span>Please also select an end date to complete the range</span>
+                    </div>
+                )}
+                {(!formData.dueDateStart && formData.dueDateEnd) && (
+                    <div className="date-dist-hint date-dist-warn">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                      <span>Please also select a start date to complete the range</span>
+                    </div>
+                )}
+              </div>
+
+              {/* ── Number of Invoices ── */}
               <div className="form-group">
                 <span className="form-label">Number of Invoices per Buyer</span>
                 <input
@@ -553,7 +730,6 @@ const InvoiceGenerator = () => {
                     onChange={handleInputChange}
                 />
               </div>
-
             </div>
 
             {/* ── Footer / CTA ── */}
@@ -564,10 +740,12 @@ const InvoiceGenerator = () => {
                   disabled={!isReady}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
                 {isReady
-                    ? `Download ZIP · ${selectedBuyers.length} ${selectedBuyers.length === 1 ? 'Buyer' : 'Buyers'} · ${formData.numInvoices} Invoice${formData.numInvoices > 1 ? 's' : ''} each`
+                    ? `Download ${selectedBuyers.length === 1 ? 'CSV' : 'ZIP'} · ${selectedBuyers.length} ${selectedBuyers.length === 1 ? 'Buyer' : 'Buyers'} · ${formData.numInvoices} Invoice${formData.numInvoices > 1 ? 's' : ''} each`
                     : 'Complete all fields to generate'
                 }
               </button>
