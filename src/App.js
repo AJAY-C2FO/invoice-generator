@@ -420,7 +420,14 @@ const InvoiceGenerator = () => {
     saveAs(zipBlob, `invoices_${timestamp}.zip`);
   };
 
-  if (loading) return <div className="loading-state">Loading buyer data...</div>;
+  if (loading) return (
+      <div className="loading-state">
+        <div className="spinner" />
+        <span>Loading buyer data…</span>
+      </div>
+  );
+
+  const isReady = selectedBuyers.length > 0 && formData.invoiceType && formData.productType;
 
   return (
       <>
@@ -428,104 +435,145 @@ const InvoiceGenerator = () => {
           <img src={c2tredsLogo} alt="c2treds" />
         </header>
 
-        <div className="invoice-generator">
-          <h1>Invoice Generator</h1>
+        <div className="page-wrapper">
+          <div className="invoice-generator">
 
-          {error && <div className="error">{error}</div>}
+            {/* ── Header ── */}
+            <div className="card-header">
+              <h1>Invoice Generator</h1>
+              <p>Generate and download invoices as a ZIP archive</p>
+            </div>
 
-          {/* Buyer Multi-Select */}
-          <div className="form-group">
-            <label>
-              Buyer Name:
-              {selectedBuyers.length > 0 && (
-                  <span className="selected-count"> ({selectedBuyers.length} selected)</span>
+            {/* ── Body ── */}
+            <div className="card-body">
+
+              {error && (
+                  <div className="error-banner">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    {error}
+                  </div>
               )}
-            </label>
 
-            <input
-                type="text"
-                placeholder="Search buyers..."
-                value={buyerSearch}
-                onChange={e => setBuyerSearch(e.target.value)}
-                className="buyer-search-input"
-            />
+              {/* Buyer Multi-Select */}
+              <div className="form-group">
+              <span className="form-label">
+                Buyers
+                {selectedBuyers.length > 0 && (
+                    <span className="badge">{selectedBuyers.length} selected</span>
+                )}
+              </span>
 
-            <div className="buyer-list">
-              {filteredBuyers.length === 0 ? (
-                  <div className="buyer-empty">No buyers found</div>
-              ) : (
-                  <>
-                    <label className="buyer-item select-all-item">
-                      <input
-                          type="checkbox"
-                          checked={allFilteredSelected}
-                          onChange={handleSelectAll}
-                      />
-                      <span className="buyer-label">Select All ({filteredBuyers.length})</span>
-                    </label>
-                    <div className="buyer-divider" />
-                    {filteredBuyers.map(buyer => (
-                        <label key={buyer.buyer_name} className="buyer-item">
+                <div className="buyer-search-wrapper">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input
+                      type="text"
+                      placeholder="Search buyers…"
+                      value={buyerSearch}
+                      onChange={e => setBuyerSearch(e.target.value)}
+                      className="buyer-search-input"
+                  />
+                </div>
+
+                <div className="buyer-list">
+                  {filteredBuyers.length === 0 ? (
+                      <div className="buyer-empty">No buyers found</div>
+                  ) : (
+                      <>
+                        <label className="buyer-item select-all-item">
                           <input
                               type="checkbox"
-                              checked={selectedBuyers.includes(buyer.buyer_name)}
-                              onChange={() => handleBuyerToggle(buyer.buyer_name)}
+                              checked={allFilteredSelected}
+                              onChange={handleSelectAll}
                           />
-                          <span className="buyer-label">{buyer.buyer_name}</span>
+                          <span className="buyer-label">Select All ({filteredBuyers.length})</span>
                         </label>
-                    ))}
-                  </>
-              )}
+                        {filteredBuyers.map(buyer => (
+                            <label key={buyer.buyer_name} className="buyer-item">
+                              <input
+                                  type="checkbox"
+                                  checked={selectedBuyers.includes(buyer.buyer_name)}
+                                  onChange={() => handleBuyerToggle(buyer.buyer_name)}
+                              />
+                              <span className="buyer-label">{buyer.buyer_name}</span>
+                            </label>
+                        ))}
+                      </>
+                  )}
+                </div>
+              </div>
+
+              {/* Invoice Type + Product Type — side by side */}
+              <div className="form-row">
+                <div className="form-group">
+                  <span className="form-label">Invoice Type</span>
+                  <div className="select-wrapper">
+                    <select
+                        name="invoiceType"
+                        value={formData.invoiceType}
+                        onChange={handleInputChange}
+                    >
+                      <option value="">Select</option>
+                      <option value="C2FO">C2FO</option>
+                      <option value="ERP">ERP</option>
+                      <option value="Buyer Self Upload">Buyer Self Upload</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <span className="form-label">Product Type</span>
+                  <div className="select-wrapper">
+                    <select
+                        name="productType"
+                        value={formData.productType}
+                        onChange={handleInputChange}
+                    >
+                      <option value="">Select</option>
+                      <option value="RFDDueDate">RFDDueDate</option>
+                      <option value="BIFactoring">BIFactoring</option>
+                      <option value="Normal">Normal</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Number of Invoices */}
+              <div className="form-group">
+                <span className="form-label">Number of Invoices per Buyer</span>
+                <input
+                    type="number"
+                    name="numInvoices"
+                    min="1"
+                    max="100"
+                    value={formData.numInvoices}
+                    onChange={handleInputChange}
+                />
+              </div>
+
             </div>
-          </div>
 
-          {/* Invoice Type */}
-          <div className="form-group">
-            <label>Invoice Type:</label>
-            <select
-                name="invoiceType"
-                value={formData.invoiceType}
-                onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              <option value="C2FO">C2FO</option>
-              <option value="ERP">ERP</option>
-              <option value="Buyer Self Upload">Buyer Self Upload</option>
-            </select>
-          </div>
+            {/* ── Footer / CTA ── */}
+            <div className="card-footer">
+              <button
+                  className="generate-btn"
+                  onClick={generateCSV}
+                  disabled={!isReady}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                {isReady
+                    ? `Download ZIP · ${selectedBuyers.length} ${selectedBuyers.length === 1 ? 'Buyer' : 'Buyers'} · ${formData.numInvoices} Invoice${formData.numInvoices > 1 ? 's' : ''} each`
+                    : 'Complete all fields to generate'
+                }
+              </button>
+            </div>
 
-          {/* Product Type */}
-          <div className="form-group">
-            <label>Product Type:</label>
-            <select
-                name="productType"
-                value={formData.productType}
-                onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              <option value="RFDDueDate">RFDDueDate</option>
-              <option value="BIFactoring">BIFactoring</option>
-              <option value="Normal">Normal</option>
-            </select>
           </div>
-
-          {/* Number of Invoices */}
-          <div className="form-group">
-            <label>Number of Invoices:</label>
-            <input
-                type="number"
-                name="numInvoices"
-                min="1"
-                max="100"
-                value={formData.numInvoices}
-                onChange={handleInputChange}
-            />
-          </div>
-
-          <button onClick={generateCSV}>
-            Generate Invoice{selectedBuyers.length > 1 ? 's' : ''}
-            {selectedBuyers.length > 1 ? ` (${selectedBuyers.length} files)` : ''}
-          </button>
         </div>
       </>
   );
