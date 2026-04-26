@@ -154,7 +154,7 @@ const InvoiceGenerator = () => {
       transactionDate.setTime(postingDate.getTime());
     }
 
-    // Pay Date: ERP and C2FO → current_date + 1; Buyer Self Upload → random future
+    // Pay Date: ERP and C2FO → current_date + 1; Manual upload → random future
     let payDate;
     if (formData.invoiceType === 'ERP' || formData.invoiceType === 'C2FO') {
       payDate = new Date(currentDate);
@@ -252,7 +252,7 @@ const InvoiceGenerator = () => {
           };
           csvData.push(row);
         }
-      } else if (formData.invoiceType === 'Buyer Self Upload') {
+      } else if (formData.invoiceType === 'Manual Upload') {
         headers = [
           'company_name', 'company_id', 'company_pan', 'buyer_pan', 'company_gstin', 'buyer_gstin',
           'invoice_id', 'invoice_date', 'invoice_acceptance_date', 'grn_date', 'due_date',
@@ -581,7 +581,7 @@ const InvoiceGenerator = () => {
                       <option value="">Select</option>
                       <option value="C2FO">C2FO</option>
                       <option value="ERP">ERP</option>
-                      <option value="Buyer Self Upload">Buyer Self Upload</option>
+                      <option value="Manual Upload">Manual Upload</option>
                     </select>
                   </div>
                 </div>
