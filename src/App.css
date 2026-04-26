@@ -1,5 +1,17 @@
-.navbar { 
-  display: flex; align-items: center; padding: 10px 20px; background-color: #f8f8f8; } .navbar img { width: 100px; height: auto; }
+/* ===== Existing styles (keep as-is) ===== */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+}
+
+.navbar img {
+  width: 100px;
+  height: auto;
+}
+
 .invoice-generator {
   max-width: 600px;
   margin: 0 auto;
@@ -20,6 +32,7 @@ input, select {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 button {
@@ -34,4 +47,86 @@ button {
 .error {
   color: red;
   margin-bottom: 15px;
+}
+
+/* ===== New styles for multi-buyer UI ===== */
+
+.loading-state {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+.selected-count {
+  font-weight: normal;
+  color: #4CAF50;
+  font-size: 0.9em;
+}
+
+.buyer-search-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.buyer-list {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.buyer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+.buyer-item:hover {
+  background-color: #f0f8f0;
+}
+
+.buyer-item input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.buyer-label {
+  font-size: 0.93em;
+  color: #333;
+  user-select: none;
+}
+
+.select-all-item {
+  background: #f7f7f7;
+  font-weight: 600;
+}
+
+.select-all-item .buyer-label {
+  font-weight: 600;
+  color: #222;
+}
+
+.buyer-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 0;
+}
+
+.buyer-empty {
+  padding: 12px;
+  color: #999;
+  font-size: 0.9em;
+  text-align: center;
 }

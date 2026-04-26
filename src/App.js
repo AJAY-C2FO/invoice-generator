@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
 import "./App.css";
 import c2tredsLogo from "./c2treds.png";
 
@@ -10,7 +11,8 @@ const InvoiceGenerator = () => {
     numInvoices: 1
   });
   const [buyers, setBuyers] = useState([]);
-  const [selectedBuyer, setSelectedBuyer] = useState(null);
+  const [selectedBuyers, setSelectedBuyers] = useState([]);
+  const [buyerSearch, setBuyerSearch] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -19,9 +21,8 @@ const InvoiceGenerator = () => {
       try {
         const response = await fetch("/invoice-generator/buyers.json");
         if (!response.ok) throw new Error('Failed to load buyers');
-        
+
         const data = await response.json();
-        // Process buyer data to split comma-separated values
         const processedData = data.map(buyer => ({
           ...buyer,
           buyer_pan: buyer.buyer_pan.split(',').map(s => s.trim()),
@@ -29,7 +30,7 @@ const InvoiceGenerator = () => {
           supplier_pan: buyer.supplier_pan.split(',').map(s => s.trim()),
           supplier_gstin: buyer.supplier_gstin.split(',').map(s => s.trim())
         }));
-        
+
         setBuyers(processedData);
       } catch (err) {
         setError('Failed to load buyer data!');
@@ -40,6 +41,34 @@ const InvoiceGenerator = () => {
 
     fetchBuyers();
   }, []);
+
+  const filteredBuyers = useMemo(() => {
+    const q = buyerSearch.trim().toLowerCase();
+    if (!q) return buyers;
+    return buyers.filter(b => b.buyer_name.toLowerCase().includes(q));
+  }, [buyers, buyerSearch]);
+
+  const allFilteredSelected = filteredBuyers.length > 0 &&
+      filteredBuyers.every(b => selectedBuyers.includes(b.buyer_name));
+
+  const handleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedBuyers(prev =>
+          prev.filter(name => !filteredBuyers.some(b => b.buyer_name === name))
+      );
+    } else {
+      const toAdd = filteredBuyers.map(b => b.buyer_name);
+      setSelectedBuyers(prev => Array.from(new Set([...prev, ...toAdd])));
+    }
+  };
+
+  const handleBuyerToggle = (buyerName) => {
+    setSelectedBuyers(prev =>
+        prev.includes(buyerName)
+            ? prev.filter(n => n !== buyerName)
+            : [...prev, buyerName]
+    );
+  };
 
   const generateCombinations = (buyer) => {
     const combinations = [];
@@ -82,118 +111,80 @@ const InvoiceGenerator = () => {
 
   const generateDates = () => {
     const currentDate = new Date();
-    let paymentDueDate, grnDate, postingDate, transactionDate;
+    currentDate.setHours(0, 0, 0, 0);
 
-    if (formData.invoiceType === 'ERP') {
-      paymentDueDate = new Date(currentDate);
-      paymentDueDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
+    // Posting Date / Invoice Date: always exactly 90 days before current date
+    const postingDate = new Date(currentDate);
+    postingDate.setDate(currentDate.getDate() - 90);
 
-      grnDate = new Date(currentDate);
-      if (Math.random() < 0.5) {
-        const pastDays = 1 + Math.floor(Math.random() * 44);
-        grnDate.setDate(currentDate.getDate() - pastDays);
-      } else {
-        const futureDays = 1 + Math.floor(Math.random() * 180);
-        grnDate.setDate(currentDate.getDate() + futureDays);
-      }
+    // GRN Date: <= 45 days in past, < current_date
+    const grnDaysAgo = 1 + Math.floor(Math.random() * 45); // 1..45
+    const grnDate = new Date(currentDate);
+    grnDate.setDate(currentDate.getDate() - grnDaysAgo);
 
-      const generateERPPastDate = () => {
-        const date = new Date(currentDate);
-        const daysAgo = 1 + Math.floor(Math.random() * 180);
-        date.setDate(date.getDate() - daysAgo);
-        return date;
-      };
+    // Due Date: > current_date, <= 180 days future
+    const dueDaysAhead = 1 + Math.floor(Math.random() * 180); // 1..180
+    const paymentDueDate = new Date(currentDate);
+    paymentDueDate.setDate(currentDate.getDate() + dueDaysAhead);
 
-      postingDate = generateERPPastDate();
-      transactionDate = generateERPPastDate();
-    } else if (formData.invoiceType === 'Buyer Self Upload') {
-      paymentDueDate = new Date(currentDate);
-      paymentDueDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
+    // Ensure grn_date <= due_date (always true since grn is past, due is future)
 
-      grnDate = new Date(currentDate);
-      if (Math.random() < 0.5) {
-        const pastDays = 1 + Math.floor(Math.random() * 44);
-        grnDate.setDate(grnDate.getDate() - pastDays);
-      } else {
-        const futureDays = 1 + Math.floor(Math.random() * 180);
-        grnDate.setDate(grnDate.getDate() + futureDays);
-      }
+    // Transaction Date: <= 90 days in past, >= posting_date, < current_date
+    // posting_date is exactly -90 days, so transaction_date is in range [-90, -1] days
+    const txDaysAgo = 1 + Math.floor(Math.random() * 90); // 1..90
+    const transactionDate = new Date(currentDate);
+    transactionDate.setDate(currentDate.getDate() - txDaysAgo);
+    // Clamp to be >= postingDate
+    if (transactionDate < postingDate) {
+      transactionDate.setTime(postingDate.getTime());
+    }
 
-      const invoiceDaysAgo = 1 + Math.floor(Math.random() * 180);
-      postingDate = new Date(currentDate);
-      postingDate.setDate(postingDate.getDate() - invoiceDaysAgo);
-
-      const acceptanceDays = 1 + Math.floor(Math.random() * 14);
-      transactionDate = new Date(postingDate);
-      transactionDate.setDate(postingDate.getDate() + acceptanceDays);
-      if (transactionDate > currentDate) {
-        transactionDate = new Date(currentDate);
-      }
+    // Pay Date: ERP and C2FO → current_date + 1; otherwise → due_date
+    let payDate;
+    if (formData.invoiceType === 'ERP' || formData.invoiceType === 'C2FO') {
+      payDate = new Date(currentDate);
+      payDate.setDate(currentDate.getDate() + 1);
     } else {
-      paymentDueDate = new Date(currentDate);
-      paymentDueDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
-      
-      grnDate = new Date(currentDate);
-      if (Math.random() < 0.5) {
-        grnDate.setDate(currentDate.getDate() - Math.floor(Math.random() * 44));
-      } else {
-        grnDate.setDate(currentDate.getDate() + Math.floor(Math.random() * 180) + 1);
-      }
-      
-      const generatePastDate = () => {
-        const date = new Date(currentDate);
-        date.setDate(currentDate.getDate() - Math.floor(Math.random() * 180));
-        return date;
-      };
-
-      postingDate = generatePastDate();
-      transactionDate = generatePastDate();
+      payDate = new Date(paymentDueDate);
     }
 
     return {
       postingDate,
       grnDate,
       transactionDate,
-      paymentDueDate
+      paymentDueDate,
+      payDate
     };
   };
 
-  const generateCSV = () => {
-    if (!selectedBuyer) {
-      setError('Please select a buyer');
-      return;
-    }
-
-    const combinations = generateCombinations(selectedBuyer);
-    if (combinations.length === 0) {
-      setError('No valid combinations found for selected buyer');
-      return;
-    }
+  const generateCSVForBuyer = (buyer) => {
+    const combinations = generateCombinations(buyer);
+    if (combinations.length === 0) return null;
 
     let headers = [];
     const csvData = [];
     const baseVoucherId = 510000000;
 
     combinations.forEach(combination => {
-        if (formData.invoiceType === 'ERP') {
-          headers = [
-            'company_id', 'company_name', 'company_gstin', 'company_pan', 'buyer_tax_id', 'buyer_pan',
-            'invoice_id', 'amount', 'currency', 'transaction_date', 'grn_date', 'posting_date',
-            'payment_due_date', 'transaction_type', 'voucher_id', 'voucher_line_id', 'fiscal_year',
-            'adj_invoice_id', 'adj_reason_code', 'description', 'buyer_name', 'buyer_address',
-            'sap_company_code', 'sap_reference_number', 'sap_vendor_number', 'credit_days',
-            'sap_payment_term', 'market_type', 'treds_flag', 'sap_discount_base_amount', 'fp_status',
-            'posting_key', 'document_type', 'business_place', 'product_type'
-          ];
+      if (formData.invoiceType === 'ERP') {
+        headers = [
+          'company_id', 'company_name', 'company_gstin', 'company_pan', 'buyer_tax_id', 'buyer_pan',
+          'invoice_id', 'amount', 'currency', 'transaction_date', 'grn_date', 'posting_date',
+          'payment_due_date', 'transaction_type', 'voucher_id', 'voucher_line_id', 'fiscal_year',
+          'adj_invoice_id', 'adj_reason_code', 'description', 'buyer_name', 'buyer_address',
+          'sap_company_code', 'sap_reference_number', 'sap_vendor_number', 'credit_days',
+          'sap_payment_term', 'market_type', 'treds_flag', 'sap_discount_base_amount', 'fp_status',
+          'posting_key', 'document_type', 'business_place', 'product_type'
+        ];
 
-          const businessPlaces = [
-            '1901|West Bengal Dabur',
-            '0601|Haryana Dabur',
-            '0201|Himachal Pradesh Dabur'
-          ];
+        const businessPlaces = [
+          '1901|West Bengal Dabur',
+          '0601|Haryana Dabur',
+          '0201|Himachal Pradesh Dabur'
+        ];
 
-          for (let i = 1; i <= formData.numInvoices; i++) {
-            const dates = generateDates();
+        for (let i = 1; i <= formData.numInvoices; i++) {
+          const dates = generateDates();
 
           const row = {
             company_id: `AJAYCOM${i.toString().padStart(3, '0')}`,
@@ -235,148 +226,149 @@ const InvoiceGenerator = () => {
           csvData.push(row);
         }
       } else if (formData.invoiceType === 'Buyer Self Upload') {
-          headers = [
-            'company_name', 'company_id', 'company_pan', 'buyer_pan', 'company_gstin', 'buyer_gstin',
-            'invoice_id', 'invoice_date', 'invoice_acceptance_date', 'grn_date', 'due_date',
-            'inv_amount', 'tax_amount', 'tds_amount', 'inv_amount_gross_tax', 'inv_amount_nettax',
-            'po_id', 'transaction_type', 'po_date', 'inv_reference', 'grn_number', 'description',
-            'credit_days', 'currency', 'product_type'
-          ];
-          for (let i = 1; i <= formData.numInvoices; i++) {
-            const currentDate = new Date();
-            const dates = generateDates();
-            
-            const invoiceDate = new Date(currentDate);
-            const invoiceDaysAgo = 1 + Math.floor(Math.random() * 180);
-            invoiceDate.setDate(invoiceDate.getDate() - invoiceDaysAgo);
-    
-            const invoiceAcceptanceDate = new Date(invoiceDate);
-            const acceptanceDays = 1 + Math.floor(Math.random() * 14);
-            invoiceAcceptanceDate.setDate(invoiceDate.getDate() + acceptanceDays);
-            if (invoiceAcceptanceDate > currentDate) {
-              invoiceAcceptanceDate.setTime(currentDate.getTime());
-            }
-    
-            const minAcceptanceDate = new Date(currentDate);
-            minAcceptanceDate.setDate(currentDate.getDate() - 180);
-            if (invoiceAcceptanceDate < minAcceptanceDate) {
-              invoiceAcceptanceDate.setTime(minAcceptanceDate.getTime());
-            }
-    
-            const companyIdNumber = 30 + i - 1;
-            const company_id = `TAJAYFU${companyIdNumber}`;
-            const invoice_id = generateUniqueId('INVID');
-    
-            const month = invoiceDate.toLocaleString('default', { month: 'short' }).toUpperCase();
-            const year = invoiceDate.getFullYear().toString().slice(-2);
-            const description = `BILL FOR THE M/O ${month}-${year} (${invoice_id})`;
-    
-            const invRefParts = [
-              'R001',
-              `511002${Math.floor(1000 + Math.random() * 9000)}`,
-              '001',
-              new Date().getFullYear(),
-              `GST${1300 + i}/2024-25`
-            ];
-            const inv_reference = invRefParts.join('|');
-    
-            const row = {
-              company_name: i % 2 === 0 ? 'SHAKTI TRADING CO.' : 'DURGESH BLOCK AND CHINA GLASS WORKS LTD.',
-              company_id: company_id,
-              company_pan: combination.sellerPan,
-              buyer_pan: combination.buyerPan,
-              company_gstin: combination.sellerGstin,
-              buyer_gstin: combination.buyerGstin,
-              invoice_id: generateUniqueId('INVID'),
-              invoice_date: formatDate(invoiceDate),
-              invoice_acceptance_date: formatDate(invoiceAcceptanceDate),
-              grn_date: formatDate(dates.grnDate),
-              due_date: formatDate(dates.paymentDueDate),
-              inv_amount: (i * 1000).toFixed(2),
-              tax_amount: '',
-              tds_amount: '',
-              inv_amount_gross_tax: '',
-              inv_amount_nettax: '',
-              po_id: '',
-              transaction_type: 1,
-              po_date: '',
-              inv_reference: inv_reference,
-              grn_number: '',
-              description: description,
-              credit_days: 45,
-              currency: 'INR',
-              product_type: formData.productType === 'Normal' ? '' : formData.productType,
-            };
-    
-            csvData.push(row);
+        headers = [
+          'company_name', 'company_id', 'company_pan', 'buyer_pan', 'company_gstin', 'buyer_gstin',
+          'invoice_id', 'invoice_date', 'invoice_acceptance_date', 'grn_date', 'due_date',
+          'inv_amount', 'tax_amount', 'tds_amount', 'inv_amount_gross_tax', 'inv_amount_nettax',
+          'po_id', 'transaction_type', 'po_date', 'inv_reference', 'grn_number', 'description',
+          'credit_days', 'currency', 'product_type'
+        ];
+
+        for (let i = 1; i <= formData.numInvoices; i++) {
+          const currentDate = new Date();
+          currentDate.setHours(0, 0, 0, 0);
+          const dates = generateDates();
+
+          // invoice_date = posting_date (90 days ago)
+          const invoiceDate = new Date(dates.postingDate);
+
+          const invoiceAcceptanceDate = new Date(invoiceDate);
+          const acceptanceDays = 1 + Math.floor(Math.random() * 14);
+          invoiceAcceptanceDate.setDate(invoiceDate.getDate() + acceptanceDays);
+          if (invoiceAcceptanceDate > currentDate) {
+            invoiceAcceptanceDate.setTime(currentDate.getTime());
           }
-        }
-        else {
-          headers = [
-            'company_id', 'company_name', 'division_id', 'sap_reference_number', 'company_pan',
-            'buyer_pan', 'company_tax_id', 'buyer_tax_id', 'posting_date', 'grn_date',
-            'transaction_date', 'pay_date', 'payment_due_date', 'invoice_id', 'voucher_id',
-            'voucher_line_id', 'amount', 'currency', 'discount_percentage', 'income',
-            'discounted_invoice_amount', 'offer_apr_amount', 'transaction_type', 'fiscal_year',
-            'adj_invoice_id', 'sequential_document_number', 'buyer_name', 'sap_vendor_number',
-            'credit_days', 'sap_payment_term', 'fp_status', 'market_type', 'treds_flag',
-            'sap_company_code', 'discount_reason_code', 'covers_adjustment', 'adj_invoice_amount',
-            'product_type', 'description'
+
+          const minAcceptanceDate = new Date(currentDate);
+          minAcceptanceDate.setDate(currentDate.getDate() - 180);
+          if (invoiceAcceptanceDate < minAcceptanceDate) {
+            invoiceAcceptanceDate.setTime(minAcceptanceDate.getTime());
+          }
+
+          const companyIdNumber = 30 + i - 1;
+          const company_id = `TAJAYFU${companyIdNumber}`;
+          const invoice_id = generateUniqueId('INVID');
+
+          const month = invoiceDate.toLocaleString('default', { month: 'short' }).toUpperCase();
+          const year = invoiceDate.getFullYear().toString().slice(-2);
+          const description = `BILL FOR THE M/O ${month}-${year} (${invoice_id})`;
+
+          const invRefParts = [
+            'R001',
+            `511002${Math.floor(1000 + Math.random() * 9000)}`,
+            '001',
+            new Date().getFullYear(),
+            `GST${1300 + i}/2024-25`
           ];
-    
-          for (let i = 1; i <= formData.numInvoices; i++) {
-            const dates = generateDates();
-            const amount = Math.floor(Math.random() * 100000);
-            const discountPercentage = parseFloat((Math.random() * 1).toFixed(2));
-            const income = parseFloat((Math.abs(amount) * discountPercentage / 100).toFixed(2));
-            
-            const row = {
-              company_id: `AJAYCOMPANY${i.toString().padStart(2, '0')}`,
-              company_name: `Company ${i}`,
-              division_id: '',
-              sap_reference_number: generateUniqueId('SAPREF'),
-              company_pan: combination.sellerPan,
-              buyer_pan: combination.buyerPan,
-              company_tax_id: combination.sellerGstin,
-              buyer_tax_id: combination.buyerGstin,
-              posting_date: dates.postingDate.toISOString().split('T')[0],
-              grn_date: dates.grnDate.toISOString().split('T')[0],
-              transaction_date: dates.transactionDate.toISOString().split('T')[0],
-              pay_date: dates.paymentDueDate.toISOString().split('T')[0],
-              payment_due_date: dates.paymentDueDate.toISOString().split('T')[0],
-              invoice_id: generateUniqueId('INVID'),
-              voucher_id: baseVoucherId + i,
-              voucher_line_id: 1,
-              amount: amount,
-              currency: 'INR',
-              discount_percentage: discountPercentage,
-              income: income,
-              discounted_invoice_amount: amount > 0 ? 
-                (amount - income).toFixed(2) : 
+          const inv_reference = invRefParts.join('|');
+
+          const row = {
+            company_name: i % 2 === 0 ? 'SHAKTI TRADING CO.' : 'DURGESH BLOCK AND CHINA GLASS WORKS LTD.',
+            company_id: company_id,
+            company_pan: combination.sellerPan,
+            buyer_pan: combination.buyerPan,
+            company_gstin: combination.sellerGstin,
+            buyer_gstin: combination.buyerGstin,
+            invoice_id: generateUniqueId('INVID'),
+            invoice_date: formatDate(invoiceDate),
+            invoice_acceptance_date: formatDate(invoiceAcceptanceDate),
+            grn_date: formatDate(dates.grnDate),
+            due_date: formatDate(dates.paymentDueDate),
+            inv_amount: (i * 1000).toFixed(2),
+            tax_amount: '',
+            tds_amount: '',
+            inv_amount_gross_tax: '',
+            inv_amount_nettax: '',
+            po_id: '',
+            transaction_type: 1,
+            po_date: '',
+            inv_reference: inv_reference,
+            grn_number: '',
+            description: description,
+            credit_days: 45,
+            currency: 'INR',
+            product_type: formData.productType === 'Normal' ? '' : formData.productType,
+          };
+
+          csvData.push(row);
+        }
+      } else {
+        // C2FO
+        headers = [
+          'company_id', 'company_name', 'division_id', 'sap_reference_number', 'company_pan',
+          'buyer_pan', 'company_tax_id', 'buyer_tax_id', 'posting_date', 'grn_date',
+          'transaction_date', 'pay_date', 'payment_due_date', 'invoice_id', 'voucher_id',
+          'voucher_line_id', 'amount', 'currency', 'discount_percentage', 'income',
+          'discounted_invoice_amount', 'offer_apr_amount', 'transaction_type', 'fiscal_year',
+          'adj_invoice_id', 'sequential_document_number', 'buyer_name', 'sap_vendor_number',
+          'credit_days', 'sap_payment_term', 'fp_status', 'market_type', 'treds_flag',
+          'sap_company_code', 'discount_reason_code', 'covers_adjustment', 'adj_invoice_amount',
+          'product_type', 'description'
+        ];
+
+        for (let i = 1; i <= formData.numInvoices; i++) {
+          const dates = generateDates();
+          const amount = Math.floor(Math.random() * 100000);
+          const discountPercentage = parseFloat((Math.random() * 1).toFixed(2));
+          const income = parseFloat((Math.abs(amount) * discountPercentage / 100).toFixed(2));
+
+          const row = {
+            company_id: `AJAYCOMPANY${i.toString().padStart(2, '0')}`,
+            company_name: `Company ${i}`,
+            division_id: '',
+            sap_reference_number: generateUniqueId('SAPREF'),
+            company_pan: combination.sellerPan,
+            buyer_pan: combination.buyerPan,
+            company_tax_id: combination.sellerGstin,
+            buyer_tax_id: combination.buyerGstin,
+            posting_date: dates.postingDate.toISOString().split('T')[0],
+            grn_date: dates.grnDate.toISOString().split('T')[0],
+            transaction_date: dates.transactionDate.toISOString().split('T')[0],
+            pay_date: dates.payDate.toISOString().split('T')[0],
+            payment_due_date: dates.paymentDueDate.toISOString().split('T')[0],
+            invoice_id: generateUniqueId('INVID'),
+            voucher_id: baseVoucherId + i,
+            voucher_line_id: 1,
+            amount: amount,
+            currency: 'INR',
+            discount_percentage: discountPercentage,
+            income: income,
+            discounted_invoice_amount: amount > 0 ?
+                (amount - income).toFixed(2) :
                 (amount + income).toFixed(2),
-              offer_apr_amount: parseFloat((Math.random() * (15 - 10) + 10).toFixed(1)),
-              transaction_type: formData.productType === 'BIFactoring' ? 2 : 1,
-              fiscal_year: new Date().getFullYear(),
-              adj_invoice_id: '',
-              sequential_document_number: `${formData.invoiceType}-Doc-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000000 + Math.random() * 9000000)}-${i.toString().padStart(2, '0')}`,
-              buyer_name: 'Dabur India Ltd.',
-              sap_vendor_number: Math.floor(100000 + Math.random() * 900000),
-              credit_days: [30, 35, 40][Math.floor(Math.random() * 3)],
-              sap_payment_term: `Z${Math.random() < 0.5 ? 'C' : 'V'}${Math.floor(10 + Math.random() * 90)}`,
-              fp_status: 'Funded by TReDS',
-              market_type: 'TREDS',
-              treds_flag: 'Y',
-              sap_company_code: '1000',
-              discount_reason_code: '',
-              covers_adjustment: '0',
-              adj_invoice_amount: '',
-              product_type: formData.productType === 'Normal' ? '' : formData.productType,
-              description: generateUniqueId('DESCRIPTION'),
-            };
-    
-            csvData.push(row);
-          }
+            offer_apr_amount: parseFloat((Math.random() * (15 - 10) + 10).toFixed(1)),
+            transaction_type: formData.productType === 'BIFactoring' ? 2 : 1,
+            fiscal_year: new Date().getFullYear(),
+            adj_invoice_id: '',
+            sequential_document_number: `${formData.invoiceType}-Doc-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000000 + Math.random() * 9000000)}-${i.toString().padStart(2, '0')}`,
+            buyer_name: 'Dabur India Ltd.',
+            sap_vendor_number: Math.floor(100000 + Math.random() * 900000),
+            credit_days: [30, 35, 40][Math.floor(Math.random() * 3)],
+            sap_payment_term: `Z${Math.random() < 0.5 ? 'C' : 'V'}${Math.floor(10 + Math.random() * 90)}`,
+            fp_status: 'Funded by TReDS',
+            market_type: 'TREDS',
+            treds_flag: 'Y',
+            sap_company_code: '1000',
+            discount_reason_code: '',
+            covers_adjustment: '0',
+            adj_invoice_amount: '',
+            product_type: formData.productType === 'Normal' ? '' : formData.productType,
+            description: generateUniqueId('DESCRIPTION'),
+          };
+
+          csvData.push(row);
         }
+      }
     });
 
     const csv = [
@@ -384,80 +376,158 @@ const InvoiceGenerator = () => {
       ...csvData.map(row => headers.map(field => row[field]).join(','))
     ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'invoices.csv');
+    return csv;
   };
 
-  if (loading) return <div>Loading buyer data...</div>;
-  if (error) return <div className="error">{error}</div>;
+  const generateCSV = async () => {
+    setError('');
+
+    if (selectedBuyers.length === 0) {
+      setError('Please select at least one buyer');
+      return;
+    }
+    if (!formData.invoiceType) {
+      setError('Please select an invoice type');
+      return;
+    }
+    if (!formData.productType) {
+      setError('Please select a product type');
+      return;
+    }
+
+    const zip = new JSZip();
+    let generatedCount = 0;
+
+    selectedBuyers.forEach(buyerName => {
+      const buyer = buyers.find(b => b.buyer_name === buyerName);
+      if (!buyer) return;
+
+      const csv = generateCSVForBuyer(buyer);
+      if (!csv) return;
+
+      const safeName = buyerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      zip.file(`invoices_${safeName}.csv`, csv);
+      generatedCount++;
+    });
+
+    if (generatedCount === 0) {
+      setError('No valid buyer combinations found. Cannot generate CSV.');
+      return;
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const timestamp = new Date().toISOString().slice(0, 10);
+    saveAs(zipBlob, `invoices_${timestamp}.zip`);
+  };
+
+  if (loading) return <div className="loading-state">Loading buyer data...</div>;
 
   return (
-    <>
-      <header className="navbar"><img src={c2tredsLogo} alt="c2treds"/></header>
-      <div className="invoice-generator">
-        <h1>Invoice Generator</h1>
-        {error && <div className="error">{error}</div>}
+      <>
+        <header className="navbar">
+          <img src={c2tredsLogo} alt="c2treds" />
+        </header>
 
-        <div className="form-group">
-          <label>Buyer Name:</label>
-          <input
-            list="buyersList"
-            onChange={(e) => setSelectedBuyer(
-              buyers.find(b => b.buyer_name === e.target.value)
-            )}
-            placeholder="Search buyer..."
-          />
-          <datalist id="buyersList">
-            {buyers.map(buyer => (
-              <option key={buyer.buyer_name} value={buyer.buyer_name} />
-            ))}
-          </datalist>
+        <div className="invoice-generator">
+          <h1>Invoice Generator</h1>
+
+          {error && <div className="error">{error}</div>}
+
+          {/* Buyer Multi-Select */}
+          <div className="form-group">
+            <label>
+              Buyer Name:
+              {selectedBuyers.length > 0 && (
+                  <span className="selected-count"> ({selectedBuyers.length} selected)</span>
+              )}
+            </label>
+
+            <input
+                type="text"
+                placeholder="Search buyers..."
+                value={buyerSearch}
+                onChange={e => setBuyerSearch(e.target.value)}
+                className="buyer-search-input"
+            />
+
+            <div className="buyer-list">
+              {filteredBuyers.length === 0 ? (
+                  <div className="buyer-empty">No buyers found</div>
+              ) : (
+                  <>
+                    <label className="buyer-item select-all-item">
+                      <input
+                          type="checkbox"
+                          checked={allFilteredSelected}
+                          onChange={handleSelectAll}
+                      />
+                      <span className="buyer-label">Select All ({filteredBuyers.length})</span>
+                    </label>
+                    <div className="buyer-divider" />
+                    {filteredBuyers.map(buyer => (
+                        <label key={buyer.buyer_name} className="buyer-item">
+                          <input
+                              type="checkbox"
+                              checked={selectedBuyers.includes(buyer.buyer_name)}
+                              onChange={() => handleBuyerToggle(buyer.buyer_name)}
+                          />
+                          <span className="buyer-label">{buyer.buyer_name}</span>
+                        </label>
+                    ))}
+                  </>
+              )}
+            </div>
+          </div>
+
+          {/* Invoice Type */}
+          <div className="form-group">
+            <label>Invoice Type:</label>
+            <select
+                name="invoiceType"
+                value={formData.invoiceType}
+                onChange={handleInputChange}
+            >
+              <option value="">Select</option>
+              <option value="C2FO">C2FO</option>
+              <option value="ERP">ERP</option>
+              <option value="Buyer Self Upload">Buyer Self Upload</option>
+            </select>
+          </div>
+
+          {/* Product Type */}
+          <div className="form-group">
+            <label>Product Type:</label>
+            <select
+                name="productType"
+                value={formData.productType}
+                onChange={handleInputChange}
+            >
+              <option value="">Select</option>
+              <option value="RFDDueDate">RFDDueDate</option>
+              <option value="BIFactoring">BIFactoring</option>
+              <option value="Normal">Normal</option>
+            </select>
+          </div>
+
+          {/* Number of Invoices */}
+          <div className="form-group">
+            <label>Number of Invoices:</label>
+            <input
+                type="number"
+                name="numInvoices"
+                min="1"
+                max="100"
+                value={formData.numInvoices}
+                onChange={handleInputChange}
+            />
+          </div>
+
+          <button onClick={generateCSV}>
+            Generate Invoice{selectedBuyers.length > 1 ? 's' : ''}
+            {selectedBuyers.length > 1 ? ` (${selectedBuyers.length} files)` : ''}
+          </button>
         </div>
-
-        <div className="form-group">
-        <label>Invoice Type:</label>
-        <select 
-          name="invoiceType" 
-          value={formData.invoiceType} 
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="C2FO">C2FO</option>
-          <option value="ERP">ERP</option>
-          <option value="Buyer Self Upload">Buyer Self Upload</option>
-          {/* <option value="Seller Self Upload">Seller Self Upload</option> */}
-        </select>
-      </div>
-
-        <div className="form-group">
-        <label>Product Type:</label>
-        <select
-          name="productType"
-          value={formData.productType}
-          onChange={handleInputChange}
-        >
-          <option value="">Select</option>
-          <option value="RFDDueDate">RFDDueDate</option>
-          <option value="BIFactoring">BIFactoring</option>
-          <option value="Normal">Normal</option>
-        </select>
-      </div>
-
-        <div className="form-group">
-        <label>Number of Invoices:</label>
-        <input
-          type="number"
-          name="numInvoices"
-          min="1"
-          max="100"
-          value={formData.numInvoices}
-          onChange={handleInputChange}
-        />
-      </div>
-        
-        <button onClick={generateCSV}>Generate Invoices</button>
-      </div>
-    </>
+      </>
   );
 };
 
