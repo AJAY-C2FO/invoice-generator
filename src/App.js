@@ -100,6 +100,7 @@ const InvoiceGenerator = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+// Current (buggy for bulk generation)
   const generateUniqueId = (prefix) => {
     return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   };
