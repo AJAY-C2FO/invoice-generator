@@ -21252,13 +21252,6 @@
     "supplier_gstin": "01BRADF4321W1Z1"
   },
   {
-    "buyer_name": "BI Company",
-    "buyer_pan": "ABCDE3998F",
-    "buyer_gstin": "01ABCDE3998F1A1",
-    "supplier_pan": "BRADF4321W",
-    "supplier_gstin": "01BRADF4321W1Z1"
-  },
-  {
     "buyer_name": "Performance Testing Buyer2999",
     "buyer_pan": "ABCDE3999F",
     "buyer_gstin": "01ABCDE3999F1A1",
